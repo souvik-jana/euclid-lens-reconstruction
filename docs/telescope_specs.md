@@ -184,15 +184,17 @@ All values sourced live from `kwargs_single_band()`. `num_exposures` varies per 
 
 Using values from the camera-properties table above and the `bkg_rms` column (expected result: **0.01090 e⁻/s/pixel**):
 
+Throughout this section, `num_exposures` (column name) is written as $n_\text{exp}$ in formulas and `num_exposures` in code — all the same quantity.
+
 | Step | Quantity | Calculation | Result |
 |------|----------|-------------|--------|
-| 1 | Total exposure time | $t_\text{tot} = N_\text{exp} \times t_\text{exp} = 4 \times 566$ | 2264 s |
+| 1 | Total exposure time | $t_\text{tot} = \text{num\_exposures} \times t_\text{exp} = 4 \times 566$ | 2264 s |
 | 2 | Sky flux density | $F_\text{sky} = 10^{(25.72 - 22.3)/2.5}$ | 23.34 e⁻/s/arcsec² |
 | 3 | Sky flux per pixel | $F_\text{sky} \times \Delta^2 = 23.34 \times 0.101^2$ | 0.2381 e⁻/s/pixel |
 | 4 | Total sky electrons | $t_\text{tot} \times 0.2381 = 2264 \times 0.2381$ | 538.8 e⁻/pixel |
-| 5 | Read noise variance | $N_\text{exp} \times N_\text{read}^2 = 4 \times 4.2^2$ | 70.56 e²/pixel |
+| 5 | Read noise variance | $\text{num\_exposures} \times \text{read\_noise}^2 = 4 \times 4.2^2$ | 70.56 e²/pixel |
 | 6 | Total variance | $70.56 + 538.8$ | 609.4 e²/pixel |
-| 7 | **$\sigma_\text{bkg}$** | $\sqrt{609.4} \;/\; 2264$ | **0.01090 e⁻/s/pixel** ✓ |
+| 7 | **$\sigma_\text{bkg}$** | $\sqrt{609.4} / 2264$ | **0.01090 e⁻/s/pixel** ✓ |
 
 In code this is `data_util.bkg_noise(read_noise, t_exp, sky_brightness_cps, pixel_scale, num_exposures)`:
 
@@ -200,24 +202,26 @@ In code this is `data_util.bkg_noise(read_noise, t_exp, sky_brightness_cps, pixe
 import numpy as np
 
 ZP, m_sky = 25.72, 22.3
-t_exp, n_exp, read_noise, pix = 566.0, 4, 4.2, 0.101
+t_exp, num_exposures, read_noise, pix = 566.0, 4, 4.2, 0.101
 
-t_tot         = n_exp * t_exp                          # 2264 s
-F_sky         = 10**((ZP - m_sky) / 2.5)              # e⁻/s/arcsec²  (23.34)
-sky_per_pixel = F_sky * pix**2                         # e⁻/s/pixel    (0.2381)
-sky_tot       = t_tot * sky_per_pixel                  # e⁻/pixel      (538.8)
-rn_tot        = n_exp * read_noise**2                  # e²/pixel      (70.56)
+t_tot         = num_exposures * t_exp                  # 2264 s
+F_sky         = 10**((ZP - m_sky) / 2.5)              # e⁻/s/arcsec²    (23.34)
+sky_per_pixel = F_sky * pix**2                         # e⁻/s/pixel      (0.2381)
+sky_tot       = t_tot * sky_per_pixel                  # e⁻/pixel        (538.8)
+rn_tot        = num_exposures * read_noise**2          # e²/pixel        (70.56)
 
-sigma_bkg = np.sqrt(rn_tot + sky_tot) / t_tot         # e⁻/s/pixel -> 0.01090
+sigma_bkg = np.sqrt(rn_tot + sky_tot) / t_tot         # e⁻/s/pixel  ->  0.01090
 ```
 
-$$\sigma_\text{bkg} = \frac{\sqrt{N_\text{read}^2 + F_\text{sky} \cdot t_\text{exp}}}{t_\text{exp}} \quad [\text{e}^-/\text{s/pixel}]$$
+The general formula (with `num_exposures` included):
 
-where the sky flux per pixel is:
+$$\sigma_\text{bkg} = \frac{\sqrt{\text{num\_exposures} \times \text{read\_noise}^2 + \text{num\_exposures} \times t_\text{exp} \times F_\text{sky} \times \Delta^2}}{\text{num\_exposures} \times t_\text{exp}}$$
 
-$$F_\text{sky} = 10^{(ZP - m_\text{sky}) / 2.5} \cdot \Delta^2 \quad [\text{e}^-/\text{s/pixel}]$$
+where:
 
-$m_\text{sky}$ is the sky surface brightness (mag/arcsec²), $\Delta$ is the pixel scale in arcsec, and $N_\text{read}$ is the read noise in electrons. For Euclid VIS ($N_\text{read} = 4.2$ e⁻, $\Delta = 0.101''$, $t_\text{exp} = 566$ s) this gives $\sigma_\text{bkg} \approx 0.011$ e⁻/s/pixel.
+$$F_\text{sky} = 10^{(ZP - m_\text{sky}) / 2.5}$$ &nbsp;&nbsp; [e⁻/s/arcsec²]
+
+$m_\text{sky}$ is the `sky_brightness` column (mag/arcsec²), $\Delta$ is `pixel_scale`, and `read_noise` is in e⁻. For Euclid VIS these give $\sigma_\text{bkg} \approx 0.011$ e⁻/s/pixel.
 
 ### Using `bkg_rms` in gwemfish
 
@@ -242,7 +246,7 @@ noise_simu_kwargs = {
 
 PAL's `SimulatorImaging` takes `background_sky_level` in **e⁻/pixel** (total electrons, not per second). You must convert:
 
-$$\sigma_\text{bkg}^2 \times t_\text{exp} \quad [\text{e}^-/\text{pixel}]$$
+$$\sigma_\text{bkg}^2 \times t_\text{exp}$$ &nbsp;&nbsp; [e⁻/pixel]
 
 The two variances are identical — this is only a unit reframing.
 
