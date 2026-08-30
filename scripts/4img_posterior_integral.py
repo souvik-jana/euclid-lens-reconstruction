@@ -10,15 +10,7 @@ jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_platform_name", "cpu")
 print("JAX devices:", jax.devices())
 
-import sys
 from pathlib import Path
-
-repo_root = Path.cwd().resolve()
-for parent in [repo_root, *repo_root.parents]:
-    src = parent / "src"
-    if (src / "gwemfish").is_dir():
-        sys.path.insert(0, str(src))
-        break
 
 import matplotlib.pyplot as plt
 

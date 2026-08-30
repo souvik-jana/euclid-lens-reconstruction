@@ -1,0 +1,16 @@
+[project]
+name = "euclid-lens-reconstruction"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gwemfish",
+    "ipykernel>=7.3.0",
+    "jupyter>=1.1.1",
+    "lenstronomy>=1.14.2",
+    "pandas>=3.0.5",
+]
+
+[tool.uv.sources]
+gwemfish = { git = "https://github.com/souvik-jana/lens_reconstruction" }
