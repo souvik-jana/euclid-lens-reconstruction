@@ -70,21 +70,21 @@ This is what `lenstronomy.Util.data_util.magnitude2cps` computes.
 
 The lenstronomy `SERSIC_ELLIPSE` profile (verified from source) is:
 
-$$I(R) = I_e \exp\!\left(-b_n\left[\left(\frac{R}{R_\text{sersic}}\right)^{1/n} - 1\right]\right)$$
+$$I(R) = I_e \exp\left( -b_n \left[ \left(\frac{R}{R_e}\right)^{1/n} - 1 \right] \right)$$
 
 where `amp` $= I_e$ and $b_n$ is the approximation to the exact half-light condition $2\gamma(2n, b_n) = \Gamma(2n)$, implemented in lenstronomy as:
 
 $$b_n = 1.9992 \cdot n - 0.3271$$
 
-At $R = R_\text{sersic}$ the exponent vanishes and $I = I_e = \texttt{amp}$, confirming that `amp` is the surface brightness **at the half-light radius** — not the central peak. The central peak (at $R=0$) is:
+At $R = R_e$ (= `R_sersic` in lenstronomy) the exponent vanishes and $I = I_e =$ `amp`, confirming that `amp` is the surface brightness **at the half-light radius** — not the central peak. The central peak (at $R=0$) is:
 
-$$I(0) = \texttt{amp} \cdot e^{b_n}$$
+$$I(0) = I_e \cdot e^{b_n}$$
 
-For $n=4$ (de Vaucouleurs): $b_4 = 1.9992 \times 4 - 0.3271 \approx 7.67$, so $I(0) \approx 2150 \times \texttt{amp}$.
+For $n=4$ (de Vaucouleurs): $b_4 = 1.9992 \times 4 - 0.3271 \approx 7.67$, so $I(0) \approx 2150 \times I_e$.
 
 A Sersic profile with `amp = 1` integrates to a total flux $F_\text{norm}$ over the image plane (computed numerically by lenstronomy with `total_flux(kwargs, norm=True)`). The required amplitude is then:
 
-$$\boxed{\texttt{amp} = \frac{F}{F_\text{norm}} = \frac{10^{(ZP - m) / 2.5}}{F_\text{norm}}}$$
+$$I_e = \frac{F}{F_\text{norm}} = \frac{10^{(ZP - m) / 2.5}}{F_\text{norm}}$$
 
 $F_\text{norm}$ depends on the profile shape — `R_sersic`, `n_sersic`, `e1`, `e2` — so the same magnitude gives a different `amp` for a compact vs. extended galaxy.
 
