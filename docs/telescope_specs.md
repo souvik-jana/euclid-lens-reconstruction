@@ -184,15 +184,15 @@ All values sourced live from `kwargs_single_band()`. `num_exposures` varies per 
 
 Using values from the camera-properties table above and the `bkg_rms` column (expected result: **0.01090 e⁻/s/pixel**):
 
-Throughout this section, `num_exposures` (column name) is written as $n_\text{exp}$ in formulas and `num_exposures` in code — all the same quantity.
+Throughout this section: $n_\text{exp}$ = `num_exposures`, $\sigma_r$ = `read_noise`, $m_\text{sky}$ = `sky_brightness`.
 
 | Step | Quantity | Calculation | Result |
 |------|----------|-------------|--------|
-| 1 | Total exposure time | $t_\text{tot} = \text{num\_exposures} \times t_\text{exp} = 4 \times 566$ | 2264 s |
+| 1 | Total exposure time | $t_\text{tot} = n_\text{exp} \times t_\text{exp} = 4 \times 566$ | 2264 s |
 | 2 | Sky flux density | $F_\text{sky} = 10^{(25.72 - 22.3)/2.5}$ | 23.34 e⁻/s/arcsec² |
 | 3 | Sky flux per pixel | $F_\text{sky} \times \Delta^2 = 23.34 \times 0.101^2$ | 0.2381 e⁻/s/pixel |
 | 4 | Total sky electrons | $t_\text{tot} \times 0.2381 = 2264 \times 0.2381$ | 538.8 e⁻/pixel |
-| 5 | Read noise variance | $\text{num\_exposures} \times \text{read\_noise}^2 = 4 \times 4.2^2$ | 70.56 e²/pixel |
+| 5 | Read noise variance | $n_\text{exp} \times \sigma_r^2 = 4 \times 4.2^2$ | 70.56 e²/pixel |
 | 6 | Total variance | $70.56 + 538.8$ | 609.4 e²/pixel |
 | 7 | **$\sigma_\text{bkg}$** | $\sqrt{609.4} / 2264$ | **0.01090 e⁻/s/pixel** ✓ |
 
@@ -215,7 +215,7 @@ sigma_bkg = np.sqrt(rn_tot + sky_tot) / t_tot         # e⁻/s/pixel  ->  0.0109
 
 The general formula (with `num_exposures` included):
 
-$$\sigma_\text{bkg} = \frac{\sqrt{\text{num\_exposures} \times \text{read\_noise}^2 + \text{num\_exposures} \times t_\text{exp} \times F_\text{sky} \times \Delta^2}}{\text{num\_exposures} \times t_\text{exp}}$$
+$$\sigma_\text{bkg} = \frac{\sqrt{n_\text{exp} \times \sigma_r^2 + n_\text{exp} \times t_\text{exp} \times F_\text{sky} \times \Delta^2}}{n_\text{exp} \times t_\text{exp}}$$
 
 where:
 
