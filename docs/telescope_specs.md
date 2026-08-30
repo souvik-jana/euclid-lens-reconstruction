@@ -72,9 +72,9 @@ The lenstronomy `SERSIC_ELLIPSE` profile (verified from source) is:
 
 $$I(R) = I_e \exp\!\left(-b_n\left[\left(\frac{R}{R_\text{sersic}}\right)^{1/n} - 1\right]\right)$$
 
-where `amp` $= I_e$ and $b_n$ is the approximation to the exact half-light condition $2\,\gamma(2n,\,b_n) = \Gamma(2n)$, implemented in lenstronomy as:
+where `amp` $= I_e$ and $b_n$ is the approximation to the exact half-light condition $2\gamma(2n, b_n) = \Gamma(2n)$, implemented in lenstronomy as:
 
-$$b_n = 1.9992\,n - 0.3271$$
+$$b_n = 1.9992 \cdot n - 0.3271$$
 
 At $R = R_\text{sersic}$ the exponent vanishes and $I = I_e = \texttt{amp}$, confirming that `amp` is the surface brightness **at the half-light radius** — not the central peak. The central peak (at $R=0$) is:
 
@@ -146,13 +146,11 @@ where the sky flux per pixel is:
 
 $$F_\text{sky} = 10^{(ZP - m_\text{sky}) / 2.5} \cdot \Delta^2 \quad [\text{e}^-/\text{s/pixel}]$$
 
-$m_\text{sky}$ is the sky surface brightness (mag/arcsec²), $\Delta$ is the pixel scale in arcsec, and $N_\text{read}$ is the read noise in electrons. For Euclid VIS ($N_\text{read} = 4.2\,\text{e}^-$, $\Delta = 0.101''$, $t_\text{exp} = 566\,\text{s}$) this gives $\sigma_\text{bkg} \approx 0.011\,\text{e}^-/\text{s/pixel}$.
+$m_\text{sky}$ is the sky surface brightness (mag/arcsec²), $\Delta$ is the pixel scale in arcsec, and $N_\text{read}$ is the read noise in electrons. For Euclid VIS ($N_\text{read} = 4.2$ e⁻, $\Delta = 0.101''$, $t_\text{exp} = 566$ s) this gives $\sigma_\text{bkg} \approx 0.011$ e⁻/s/pixel.
 
 ### Using `bkg_rms` in gwemfish
 
-gwemfish's `noise_simu_kwargs["background_rms"]` expects e⁻/s/pixel — the same unit `SingleBand.background_noise` returns — so it drops in directly:
-
-$$\texttt{background\_rms}_\text{gwemfish} = \sigma_\text{bkg}$$
+gwemfish's `noise_simu_kwargs["background_rms"]` expects e⁻/s/pixel — the same unit `SingleBand.background_noise` returns — so it drops in directly with no conversion.
 
 ```python
 from lenstronomy.SimulationAPI.ObservationConfig.Euclid import Euclid
@@ -173,7 +171,7 @@ noise_simu_kwargs = {
 
 PAL's `SimulatorImaging` takes `background_sky_level` in **e⁻/pixel** (total electrons, not per second). You must convert:
 
-$$\texttt{background\_sky\_level}_\text{PAL} = \sigma_\text{bkg}^2 \cdot t_\text{exp} \quad [\text{e}^-/\text{pixel}]$$
+$$\sigma_\text{bkg}^2 \times t_\text{exp} \quad [\text{e}^-/\text{pixel}]$$
 
 The two variances are identical — this is only a unit reframing.
 
