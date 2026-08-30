@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.python-version
+
+.ipynb_checkpoints/
+
+figures/
+results/
+progress_results.jsonl
+
+*.png
+*.log
+.DS_Store
