@@ -138,19 +138,43 @@ amp_source = source_kwargs[0]["amp"]
 
 ### Camera properties
 
-These are the detector-level values that feed into $\sigma_\text{bkg}$. All sourced from `kwargs_single_band()["read_noise"]`, `["pixel_scale"]`, `["ccd_gain"]`.
+All values sourced live from `kwargs_single_band()`. `num_exposures` varies per band (survey mode / coadd strategy), so this table is per-band.
 
-| Telescope | Camera / Detector | read_noise (e⁻) | pixel_scale (") | ccd_gain (e⁻/ADU) |
-|-----------|-------------------|----------------:|----------------:|-------------------:|
-| Euclid    | VIS               |            4.20 |           0.101 |               3.10 |
-| Euclid    | NISP (Y/J/H)      |            6.10 |           0.300 |               3.10 |
-| HST       | WFC3              |            4.00 |           0.080 |               2.50 |
-| JWST      | NIRCam short (F115/150/200W) | 15.77 |     0.031 |               2.05 |
-| JWST      | NIRCam long (F277/356/444W)  | 13.25 |     0.063 |               1.82 |
-| LSST      | LSSTCam           |           10.00 |           0.200 |               2.30 |
-| DES       | DECam             |            7.00 |           0.263 |               4.00 |
-| Roman     | WFI               |            8.50 |           0.110 |               1.00 |
-| ZTF       | ZTF camera        |           10.30 |           1.010 |               5.80 |
+| Telescope | Band         | read_noise (e⁻) | pixel_scale (") | ccd_gain (e⁻/ADU) | sky_brightness (mag/arcsec²) | num_exposures |
+|-----------|--------------|----------------:|----------------:|-------------------:|-----------------------------:|--------------:|
+| Euclid    | VIS          |            4.20 |           0.101 |               3.10 |                         22.3 |             4 |
+| Euclid    | Y            |            6.10 |           0.300 |               3.10 |                         22.1 |             4 |
+| Euclid    | J            |            6.10 |           0.300 |               3.10 |                         22.2 |             4 |
+| Euclid    | H            |            6.10 |           0.300 |               3.10 |                         22.3 |             4 |
+| HST       | WFC3_F160W   |            4.00 |           0.080 |               2.50 |                         22.3 |             1 |
+| HST       | TDLMC_F160W  |            4.00 |           0.080 |               2.50 |                         22.0 |             1 |
+| JWST      | F115W        |           15.77 |           0.031 |               2.05 |                         30.96 |            8 |
+| JWST      | F150W        |           15.77 |           0.031 |               2.05 |                         29.96 |            8 |
+| JWST      | F200W        |           15.77 |           0.031 |               2.05 |                         29.52 |            1 |
+| JWST      | F277W        |           13.25 |           0.063 |               1.82 |                         28.96 |            8 |
+| JWST      | F356W        |           13.25 |           0.063 |               1.82 |                         28.39 |            1 |
+| JWST      | F444W        |           13.25 |           0.063 |               1.82 |                         28.15 |            8 |
+| LSST      | u            |           10.00 |           0.200 |               2.30 |                         22.99 |          140 |
+| LSST      | g            |           10.00 |           0.200 |               2.30 |                         22.26 |          200 |
+| LSST      | r            |           10.00 |           0.200 |               2.30 |                         21.20 |          460 |
+| LSST      | i            |           10.00 |           0.200 |               2.30 |                         20.48 |          460 |
+| LSST      | z            |           10.00 |           0.200 |               2.30 |                         19.60 |          400 |
+| LSST      | y            |           10.00 |           0.200 |               2.30 |                         18.61 |          400 |
+| DES       | g            |            7.00 |           0.263 |               4.00 |                         22.01 |           10 |
+| DES       | r            |            7.00 |           0.263 |               4.00 |                         21.15 |           10 |
+| DES       | i            |            7.00 |           0.263 |               4.00 |                         19.89 |           10 |
+| DES       | z            |            7.00 |           0.263 |               4.00 |                         18.72 |           10 |
+| DES       | Y            |            7.00 |           0.263 |               4.00 |                         17.96 |           10 |
+| Roman     | F062         |            8.50 |           0.110 |               1.00 |                         23.19 |             1 |
+| Roman     | F087         |            8.50 |           0.110 |               1.00 |                         22.93 |             1 |
+| Roman     | F106         |            8.50 |           0.110 |               1.00 |                         22.99 |             6 |
+| Roman     | F129         |            8.50 |           0.110 |               1.00 |                         22.99 |             6 |
+| Roman     | F158         |            8.50 |           0.110 |               1.00 |                         23.10 |             6 |
+| Roman     | F184         |            8.50 |           0.110 |               1.00 |                         23.22 |             4 |
+| Roman     | F146         |            8.50 |           0.110 |               1.00 |                         22.03 |         41000 |
+| ZTF       | g            |           10.30 |           1.010 |               5.80 |                         22.01 |            40 |
+| ZTF       | r            |           10.30 |           1.010 |               5.80 |                         21.15 |            40 |
+| ZTF       | i            |           10.30 |           1.010 |               5.80 |                         19.89 |            40 |
 
 ### What it is
 
