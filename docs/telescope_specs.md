@@ -55,7 +55,7 @@ externally at runtime. It is not bundled in lenstronomy.
 
 ### What the catalog gives you
 
-The Qiuhan catalog stores **apparent AB magnitudes** (e.g. `source_app_mag_VIS`, `deflector_app_mag_VIS`). gwemfish/herculens light profiles are parameterised by an **amplitude** `amp`, which sets the peak surface brightness in units of e⁻/s/pixel². The conversion has two steps.
+The Qiuhan catalog stores **apparent AB magnitudes** (e.g. `source_app_mag_VIS`, `deflector_app_mag_VIS`). gwemfish/herculens light profiles are parameterised by an **amplitude** `amp`, which is the surface brightness **at the half-light radius** $R_\text{sersic}$ in units of e⁻/s/pixel². The conversion has two steps.
 
 ### Step 1 — magnitude to counts per second
 
@@ -67,6 +67,20 @@ where $m$ is the apparent magnitude and $ZP$ is the survey zero-point (e.g. 25.7
 This is what `lenstronomy.Util.data_util.magnitude2cps` computes.
 
 ### Step 2 — flux to profile amplitude
+
+The lenstronomy `SERSIC_ELLIPSE` profile (verified from source) is:
+
+$$I(R) = I_e \exp\!\left(-b_n\left[\left(\frac{R}{R_\text{sersic}}\right)^{1/n} - 1\right]\right)$$
+
+where `amp` $= I_e$ and $b_n$ is the approximation to the exact half-light condition $2\,\gamma(2n,\,b_n) = \Gamma(2n)$, implemented in lenstronomy as:
+
+$$b_n = 1.9992\,n - 0.3271$$
+
+At $R = R_\text{sersic}$ the exponent vanishes and $I = I_e = \texttt{amp}$, confirming that `amp` is the surface brightness **at the half-light radius** — not the central peak. The central peak (at $R=0$) is:
+
+$$I(0) = \texttt{amp} \cdot e^{b_n}$$
+
+For $n=4$ (de Vaucouleurs): $b_4 = 1.9992 \times 4 - 0.3271 \approx 7.67$, so $I(0) \approx 2150 \times \texttt{amp}$.
 
 A Sersic profile with `amp = 1` integrates to a total flux $F_\text{norm}$ over the image plane (computed numerically by lenstronomy with `total_flux(kwargs, norm=True)`). The required amplitude is then:
 
@@ -110,10 +124,76 @@ lens_light_kwargs, source_kwargs, _ = mag_converter.magnitude2amplitude(
     kwargs_source_mag=kwargs_source_mag,
 )
 
-amp_lens  = lens_light_kwargs[0]["amp"]   # e⁻/s/arcsec², ready for gwemfish
+amp_lens   = lens_light_kwargs[0]["amp"]   # surface brightness at R_sersic [e⁻/s/pixel²], ready for gwemfish
 amp_source = source_kwargs[0]["amp"]
 ```
 
 ### Why not just use `magnitude2cps` directly?
 
 `magnitude2cps(m, ZP)` gives the **total flux** of the source. But gwemfish needs `amp`, the **peak** of the normalised profile. Dividing by $F_\text{norm}$ (the profile integral at `amp=1`) converts total flux into the correct peak amplitude. Skipping that step would make all sources too faint by a factor of $F_\text{norm}$, which varies with size and Sérsic index.
+
+---
+
+## Background noise (`bkg_rms`)
+
+### What it is
+
+`SingleBand.background_noise` combines read noise and sky shot noise into a single per-pixel noise floor, normalised to per-second:
+
+$$\sigma_\text{bkg} = \frac{\sqrt{N_\text{read}^2 + F_\text{sky} \cdot t_\text{exp}}}{t_\text{exp}} \quad [\text{e}^-/\text{s/pixel}]$$
+
+where the sky flux per pixel is:
+
+$$F_\text{sky} = 10^{(ZP - m_\text{sky}) / 2.5} \cdot \Delta^2 \quad [\text{e}^-/\text{s/pixel}]$$
+
+$m_\text{sky}$ is the sky surface brightness (mag/arcsec²), $\Delta$ is the pixel scale in arcsec, and $N_\text{read}$ is the read noise in electrons. For Euclid VIS ($N_\text{read} = 4.2\,\text{e}^-$, $\Delta = 0.101''$, $t_\text{exp} = 566\,\text{s}$) this gives $\sigma_\text{bkg} \approx 0.011\,\text{e}^-/\text{s/pixel}$.
+
+### Using `bkg_rms` in gwemfish
+
+gwemfish's `noise_simu_kwargs["background_rms"]` expects e⁻/s/pixel — the same unit `SingleBand.background_noise` returns — so it drops in directly:
+
+$$\texttt{background\_rms}_\text{gwemfish} = \sigma_\text{bkg}$$
+
+```python
+from lenstronomy.SimulationAPI.ObservationConfig.Euclid import Euclid
+from lenstronomy.SimulationAPI.observation_api import SingleBand
+
+cfg_tel = Euclid("VIS", "GAUSSIAN").kwargs_single_band()
+bkg_rms = SingleBand(**cfg_tel).background_noise   # 0.011 e⁻/s/pixel
+t_exp   = cfg_tel["exposure_time"]                 # 566.0 s
+
+noise_simu_kwargs = {
+    "npix": 40,
+    "background_rms": bkg_rms,   # use directly — no conversion needed
+    "exposure_time": t_exp,
+}
+```
+
+### Using `bkg_rms` in PyAutoLens (PAL)
+
+PAL's `SimulatorImaging` takes `background_sky_level` in **e⁻/pixel** (total electrons, not per second). You must convert:
+
+$$\texttt{background\_sky\_level}_\text{PAL} = \sigma_\text{bkg}^2 \cdot t_\text{exp} \quad [\text{e}^-/\text{pixel}]$$
+
+The two variances are identical — this is only a unit reframing.
+
+```python
+import autolens as al
+
+background_sky_level = bkg_rms**2 * t_exp   # e⁻/pixel  (PAL convention)
+
+sim = al.SimulatorImaging(
+    exposure_time=t_exp,
+    psf=psf,
+    background_sky_level=background_sky_level,
+    add_poisson_noise_to_data=True,
+    noise_seed=seed,
+)
+```
+
+### Quick reference
+
+| Framework | Input key | Formula | Unit |
+|-----------|-----------|---------|------|
+| gwemfish  | `background_rms` | $\sigma_\text{bkg}$ | e⁻/s/pixel |
+| PAL       | `background_sky_level` | $\sigma_\text{bkg}^2 \times t_\text{exp}$ | e⁻/pixel |
