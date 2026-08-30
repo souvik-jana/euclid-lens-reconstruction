@@ -61,7 +61,7 @@ The Qiuhan catalog stores **apparent AB magnitudes** (e.g. `source_app_mag_VIS`,
 
 The AB zero-point definition gives the total observed flux of the source:
 
-$$F \;[\text{e}^-\!/\text{s}] = 10^{\,(ZP - m)\,/\,2.5}$$
+$$F [\text{e}^- / \text{s}] = 10^{(ZP - m) / 2.5}$$
 
 where $m$ is the apparent magnitude and $ZP$ is the survey zero-point (e.g. 25.72 for Euclid VIS).  
 This is what `lenstronomy.Util.data_util.magnitude2cps` computes.
@@ -70,7 +70,7 @@ This is what `lenstronomy.Util.data_util.magnitude2cps` computes.
 
 A Sersic profile with `amp = 1` integrates to a total flux $F_\text{norm}$ over the image plane (computed numerically by lenstronomy with `total_flux(kwargs, norm=True)`). The required amplitude is then:
 
-$$\boxed{\texttt{amp} = \frac{F}{F_\text{norm}} = \frac{10^{\,(ZP - m)\,/\,2.5}}{F_\text{norm}}}$$
+$$\boxed{\texttt{amp} = \frac{F}{F_\text{norm}} = \frac{10^{(ZP - m) / 2.5}}{F_\text{norm}}}$$
 
 $F_\text{norm}$ depends on the profile shape — `R_sersic`, `n_sersic`, `e1`, `e2` — so the same magnitude gives a different `amp` for a compact vs. extended galaxy.
 
