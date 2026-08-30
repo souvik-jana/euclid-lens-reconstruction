@@ -136,9 +136,56 @@ amp_source = source_kwargs[0]["amp"]
 
 ## Background noise (`bkg_rms`)
 
+### Camera properties
+
+These are the detector-level values that feed into $\sigma_\text{bkg}$. All sourced from `kwargs_single_band()["read_noise"]`, `["pixel_scale"]`, `["ccd_gain"]`.
+
+| Telescope | Camera / Detector | read_noise (e⁻) | pixel_scale (") | ccd_gain (e⁻/ADU) |
+|-----------|-------------------|----------------:|----------------:|-------------------:|
+| Euclid    | VIS               |            4.20 |           0.101 |               3.10 |
+| Euclid    | NISP (Y/J/H)      |            6.10 |           0.300 |               3.10 |
+| HST       | WFC3              |            4.00 |           0.080 |               2.50 |
+| JWST      | NIRCam short (F115/150/200W) | 15.77 |     0.031 |               2.05 |
+| JWST      | NIRCam long (F277/356/444W)  | 13.25 |     0.063 |               1.82 |
+| LSST      | LSSTCam           |           10.00 |           0.200 |               2.30 |
+| DES       | DECam             |            7.00 |           0.263 |               4.00 |
+| Roman     | WFI               |            8.50 |           0.110 |               1.00 |
+| ZTF       | ZTF camera        |           10.30 |           1.010 |               5.80 |
+
 ### What it is
 
 `SingleBand.background_noise` combines read noise and sky shot noise into a single per-pixel noise floor, normalised to per-second:
+
+### Worked example — Euclid VIS
+
+Using values from the camera-properties table above and the `bkg_rms` column (expected result: **0.01090 e⁻/s/pixel**):
+
+| Step | Quantity | Calculation | Result |
+|------|----------|-------------|--------|
+| 1 | Total exposure time | $t_\text{tot} = N_\text{exp} \times t_\text{exp} = 4 \times 566$ | 2264 s |
+| 2 | Sky flux density | $F_\text{sky} = 10^{(25.72 - 22.3)/2.5}$ | 23.34 e⁻/s/arcsec² |
+| 3 | Sky flux per pixel | $F_\text{sky} \times \Delta^2 = 23.34 \times 0.101^2$ | 0.2381 e⁻/s/pixel |
+| 4 | Total sky electrons | $t_\text{tot} \times 0.2381 = 2264 \times 0.2381$ | 538.8 e⁻/pixel |
+| 5 | Read noise variance | $N_\text{exp} \times N_\text{read}^2 = 4 \times 4.2^2$ | 70.56 e²/pixel |
+| 6 | Total variance | $70.56 + 538.8$ | 609.4 e²/pixel |
+| 7 | **$\sigma_\text{bkg}$** | $\sqrt{609.4} \;/\; 2264$ | **0.01090 e⁻/s/pixel** ✓ |
+
+In code this is `data_util.bkg_noise(read_noise, t_exp, sky_brightness_cps, pixel_scale, num_exposures)`:
+
+```python
+import numpy as np
+
+ZP, m_sky = 25.72, 22.3
+t_exp, n_exp, read_noise, pix = 566.0, 4, 4.2, 0.101
+
+t_tot         = n_exp * t_exp                          # 2264 s
+F_sky         = 10**((ZP - m_sky) / 2.5)              # e⁻/s/arcsec²  (23.34)
+sky_per_pixel = F_sky * pix**2                         # e⁻/s/pixel    (0.2381)
+sky_tot       = t_tot * sky_per_pixel                  # e⁻/pixel      (538.8)
+rn_tot        = n_exp * read_noise**2                  # e²/pixel      (70.56)
+
+sigma_bkg = np.sqrt(rn_tot + sky_tot) / t_tot         # e⁻/s/pixel -> 0.01090
+```
 
 $$\sigma_\text{bkg} = \frac{\sqrt{N_\text{read}^2 + F_\text{sky} \cdot t_\text{exp}}}{t_\text{exp}} \quad [\text{e}^-/\text{s/pixel}]$$
 

@@ -87,3 +87,39 @@ for tel, band, make in BANDS:
 print()
 print("pixel_PSF = True: psf_type='PIXEL' is supported but the kernel map must be")
 print("                  provided externally at runtime (not bundled in lenstronomy).")
+
+# ── Camera / detector properties + sky brightness ──────────────────────────
+print()
+print("─" * 90)
+print("Camera & sky properties (per-band, from kwargs_single_band)")
+print("─" * 90)
+
+cam_header = (
+    f"{'Telescope':<10} {'Band':<15} {'read_noise(e)':>14}  {'ccd_gain':>9}  "
+    f"{'sky_brightness':>15}  {'num_exposures':>14}"
+)
+print(cam_header)
+print("-" * len(cam_header))
+
+prev_tel = None
+for tel, band, make in BANDS:
+    if prev_tel is not None and tel != prev_tel:
+        print()
+    prev_tel = tel
+
+    cfg = make().kwargs_single_band()
+
+    rn   = cfg.get("read_noise")
+    gain = cfg.get("ccd_gain")
+    sky  = cfg.get("sky_brightness")
+    nexp = cfg.get("num_exposures")
+
+    rn_str   = f"{rn:.2f}"   if rn   is not None else "N/A"
+    gain_str = f"{gain:.2f}" if gain is not None else "N/A"
+    sky_str  = f"{sky:.3f}"  if sky  is not None else "N/A"
+    nexp_str = str(nexp)     if nexp is not None else "N/A"
+
+    print(
+        f"{tel:<10} {band:<15} {rn_str:>14}  {gain_str:>9}  "
+        f"{sky_str:>15}  {nexp_str:>14}"
+    )
