@@ -1,0 +1,23 @@
+stages:
+  summary:
+    # One Fisher run per mode (EM-only, GW-only, EM+GW) for each selected lens.
+    # jobs=2 is a memory limit, not a speed choice: one lens in flight peaks near 3 GB
+    # in the EM Fisher Hessian, and three concurrent peaks exhaust this machine and fall
+    # into swap. recycle=10 restarts each worker every 10 lenses to cap the ~0.5 GB/lens
+    # the workers accumulate. Roughly 8 s/lens at jobs=2.
+    cmd: >-
+      uv run python scripts/euclid_lens_summary.py
+      --ic-min ${summary.ic_min}
+      --limit ${summary.limit}
+      --jobs 2
+      --recycle 10
+      --out outputs/euclid_lens_summary.csv
+    params:
+      - summary.ic_min
+      - summary.limit
+    deps:
+      - scripts/euclid_lens_summary.py
+      - scripts/common.py
+      - catalog/filtered_lens_catalog_PL_IC_gt_70.csv
+    outs:
+      - outputs/euclid_lens_summary.csv

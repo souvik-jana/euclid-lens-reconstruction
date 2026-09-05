@@ -10,6 +10,24 @@ figures/
 results/
 progress_results.jsonl
 
+# Data & run products — track with DVC, not git.
+# Keep *.dvc pointers (and dvc.yaml / dvc.lock) in git.
+/catalog/**
+!/catalog/**/
+!/catalog/**/*.dvc
+# No leading slash: also catches notebooks/outputs/, which held 1.6 MB of nautilus
+# checkpoints that the root-anchored /outputs/ rule was letting through.
+outputs/
+*.csv
+*.hdf5
+*.h5
+
+# Generated knowledge-graph cache.
+graphify-out/
+
 *.png
 *.log
+*.pdf
+#*.json
+*.pkl
 .DS_Store

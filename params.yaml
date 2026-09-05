@@ -1,0 +1,6 @@
+summary:
+  # Detectability cut on the catalog's IC_Euclid column (2391 of 2463 rows pass at 70).
+  ic_min: 70
+  # How many of those to reconstruct. Raise to 2391 for the full sweep (~5 h);
+  # Python slicing clamps, so any larger number also means "all".
+  limit: 10

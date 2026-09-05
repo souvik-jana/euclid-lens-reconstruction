@@ -7,11 +7,14 @@ from lenstronomy.SimulationAPI.mag_amp_conversion import MagAmpConversion
 from lenstronomy.SimulationAPI.ObservationConfig.Euclid import Euclid
 from gwemfish.config import DEFAULT_KWARGS_NUMERICS, SOLVER_PARAMS
 
+from lenstronomy.SimulationAPI.observation_api import SingleBand
+
 _euclid_vis_cfg = Euclid("VIS", "GAUSSIAN").kwargs_single_band()
-EUCLID_VIS_ZP = _euclid_vis_cfg["magnitude_zero_point"]     # 25.72
-EUCLID_VIS_PIX_SCL = _euclid_vis_cfg["pixel_scale"]         # 0.101 arcsec/px
-EUCLID_VIS_FWHM = _euclid_vis_cfg["seeing"]                 # 0.16 arcsec
-EUCLID_VIS_TEXP = _euclid_vis_cfg["exposure_time"]          # 566.0 s
+EUCLID_VIS_ZP      = _euclid_vis_cfg["magnitude_zero_point"]   # 25.72
+EUCLID_VIS_PIX_SCL = _euclid_vis_cfg["pixel_scale"]            # 0.101 arcsec/px
+EUCLID_VIS_FWHM    = _euclid_vis_cfg["seeing"]                 # 0.16 arcsec
+EUCLID_VIS_TEXP    = _euclid_vis_cfg["exposure_time"]          # 566.0 s
+EUCLID_VIS_BKG_RMS = SingleBand(**_euclid_vis_cfg).background_noise  # 0.011 e-/s/px
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -29,8 +32,8 @@ sample_cfg = {
             "fwhm": EUCLID_VIS_FWHM,
             "pixel_size": EUCLID_VIS_PIX_SCL,
         },
-        "noise_simu_kwargs": {"npix": int(40), "background_rms": 5e-2, "exposure_time": EUCLID_VIS_TEXP},
-        "noise_inf_kwargs":  {"npix": int(40), "background_rms": None, "exposure_time": EUCLID_VIS_TEXP},
+        "noise_simu_kwargs": {"npix": int(40), "background_rms": EUCLID_VIS_BKG_RMS, "exposure_time": EUCLID_VIS_TEXP},
+        "noise_inf_kwargs":  {"npix": int(40), "background_rms": None,               "exposure_time": EUCLID_VIS_TEXP},
         "kwargs_numerics": DEFAULT_KWARGS_NUMERICS,
         "exposure_time": EUCLID_VIS_TEXP,
         "seed": 87651,
