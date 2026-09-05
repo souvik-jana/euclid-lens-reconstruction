@@ -1,0 +1,27 @@
+schema: '2.0'
+stages:
+  summary:
+    cmd: uv run python scripts/euclid_lens_summary.py --ic-min 70 --limit 10 
+      --jobs 2 --recycle 10 --out outputs/euclid_lens_summary.csv
+    deps:
+    - path: catalog/filtered_lens_catalog_PL_IC_gt_70.csv
+      hash: md5
+      md5: de9b6c8e02f04032d8167a3f3746c7c7
+      size: 1873971
+    - path: scripts/common.py
+      hash: md5
+      md5: f0ea94b13380eda2a7151bfc6aaa6dad
+      size: 7152
+    - path: scripts/euclid_lens_summary.py
+      hash: md5
+      md5: 12725dcbcbf54a40f085ef6d5679b596
+      size: 19286
+    params:
+      params.yaml:
+        summary.ic_min: 70
+        summary.limit: 10
+    outs:
+    - path: outputs/euclid_lens_summary.csv
+      hash: md5
+      md5: a88b7728fa53799b68198fe021bd2e3b
+      size: 1139
